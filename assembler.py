@@ -24,8 +24,8 @@ def load_assembler_1D(x, f, kop, gop):
         b[i]     += f(x[i])   * h / 2
         b[i+1]   += f(x[i+1]) * h / 2
     
-    b[0] = b[0] + kop[0] + gop[0]
-    b[n] = b[n] + kop[1] + gop[1]
+    b[0] = b[0] + kop[0]*gop[0]
+    b[n] = b[n] + kop[1]*gop[1]
 
     return b
 
@@ -65,10 +65,10 @@ def stiffness_assembler_1D(x, k, a, kop):
         xm = (x[i+1]+x[i])/2 #average x on the interval
         am, km= a(xm), k(xm) #avg value of functions
 
-        A[i, i] = A[i, i] +(am+km)/h
-        A[i,i+1] = A[i,i+1] - (am+km)/h
-        A[i+1,i] = A[i+1,i] - (am+km)/h
-        A[i+1,i+1] = A[i+1,i+1] + (am+km)/h
+        A[i, i] = A[i, i] +(am*km)/h
+        A[i,i+1] = A[i,i+1] - (am*km)/h
+        A[i+1,i] = A[i+1,i] - (am*km)/h
+        A[i+1,i+1] = A[i+1,i+1] + (am*km)/h
     
     A[0,0] += kop[0]
     A[n,n] += kop[1]#n e non n+1 poiché 0-99, 99 è il 100esimo elemento
