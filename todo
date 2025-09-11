@@ -1,0 +1,8 @@
+- implementare una funzione che integra per parti
+- implementare una funzione che discretizza
+- implementare una funzione che scriva il problema lineare
+- implementare funzioni per il calcolo delle matrici(in parte già presenti)
+- implemenare funzioni di plot
+
+! inizialmente sarà su un problema fisso, poi si potranno chiedere input
+    -> input tramite gui possibilmente
