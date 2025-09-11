@@ -72,21 +72,20 @@ def make_bvp_solver(geom, A_fun, k_fun, f_fun, a, b, T_a=None, Tp_b=None):
 
 
 
-geom = g.Geometry1D(0,6,100)
+geom = g.Geometry1D(2,8,100)
 k= lambda x: 5-0.6*x
-#k=0
 a=lambda _: 0.1
 f= lambda x: 0.03*(x-6)**4
-#f=lambda x: 0
 kop=[10**6, 0]
 gop = [-1, 0]
 params=[k,a,f,kop,gop]
 
-
+#la funzione usa le c.c di dirichlet e neumann in modo tale
+#da avere un confronto anche su come ho impostato il problema
 sol = make_bvp_solver(geom,a, k, f, a=0, b=6, T_a=-1, Tp_b=0)
 
 # Plot
-xx = np.linspace(0, 6, 200)
+xx=geom.xx
 plt.plot(xx, sol.sol(xx)[0], label="T(x)")
 plt.xlabel("x"); plt.ylabel("T(x)")
 plt.legend(); plt.grid(True)
