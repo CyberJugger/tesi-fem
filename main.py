@@ -42,10 +42,12 @@ def solver_T_1D(geom, params):
 
     return x, Pf
 
-geom = g.Geometry1D(0,6,1000)
+geom = g.Geometry1D(0,6,100)
 k= lambda x: 5-0.6*x
-a=0.1
+#k=0
+a=1
 f= lambda x: 0.03*(x-6)**4
+#f=lambda x: 0
 kop=[10^6, 0]
 gop = [-1, 0]
 params=[k,a,f,kop,gop]

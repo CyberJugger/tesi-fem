@@ -56,7 +56,7 @@ def stiffness_assembler_1D(x, k, a, kop):
         c_a = a
         a = lambda _: c_a
 
-    if not callable(a):
+    if not callable(k):
         c_k = k
         k = lambda _: c_k
 
@@ -70,7 +70,7 @@ def stiffness_assembler_1D(x, k, a, kop):
         A[i+1,i] = A[i+1,i] - (am+km)/h
         A[i+1,i+1] = A[i+1,i+1] + (am+km)/h
     
-    A[1,1] += kop[0]
-    A[n,n] += kop[1]
+    A[0,0] += kop[0]
+    A[n,n] += kop[1]#n e non n+1 poiché 0-99, 99 è il 100esimo elemento
 
     return A
