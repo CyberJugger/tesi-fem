@@ -17,7 +17,7 @@ Clone the repository, create a virtual enviroment
     
 ## Usage/Examples
 ```bash
-   python3 main.py
+   python3 gui.py
 ```
 
 This is a very basic version of the program, to change the problems' parameters modify the variables inside *main.py*.

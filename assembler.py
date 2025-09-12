@@ -29,25 +29,6 @@ def load_assembler_1D(x, f, kop, gop):
 
     return b
 
-"""
-def L2_projector_1D(geom, func):
-    x = geom.xx  # mesh
-
-    M = mass_assembler_1D(x)          # assemble mass
-    b = load_assembler_1D(x, func)    # assemble load
-
-    Pf = np.linalg.solve(M, b)      # solve linear system
-
-    plt.plot(x, Pf, marker='o')
-    plt.xlabel("x")
-    plt.ylabel("Pf(x)")
-    plt.title("L2 Projection in 1D")
-    plt.grid(True)
-    plt.show()
-
-    return x, Pf
-"""
-
 def stiffness_assembler_1D(x, k, a, kop):
     n = len(x) -1
     A = np.zeros((n+1,n+1))
