@@ -1,5 +1,6 @@
 import geometry as g
 import assembler as am
+import utils as ut
 import numpy as np
 import matplotlib.pyplot as plt
 import sympy as sp
@@ -35,13 +36,7 @@ def solver_T_1D(geom, params):
 
     Pf = np.linalg.solve(A, b)      # solve linear system
 
-    plt.plot(x, Pf, marker='o')
-    plt.xlabel("x")
-    plt.ylabel("T(x)")
-    plt.title("T function")
-    plt.grid(True)
-    plt.show()
-
+    ut.plotter(x,Pf,a,"T function FEM", True)
     return x, Pf
 
 def make_bvp_solver(geom, A_fun, k_fun, f_fun, a, b, T_a=None, Tp_b=None):
@@ -68,6 +63,7 @@ def make_bvp_solver(geom, A_fun, k_fun, f_fun, a, b, T_a=None, Tp_b=None):
     y_guess = np.zeros((2, x_mesh.size))
     
     sol = solve_bvp(ode_fun, bc, x_mesh, y_guess)
+    ut.plotter(x_mesh,sol.sol(x_mesh)[0],a,"T function analytic")
     return sol
 
 
@@ -86,9 +82,6 @@ sol = make_bvp_solver(geom,a, k, f, a=0, b=6, T_a=-1, Tp_b=0)
 
 # Plot
 xx=geom.xx
-plt.plot(xx, sol.sol(xx)[0], label="T(x)")
-plt.xlabel("x"); plt.ylabel("T(x)")
-plt.legend(); plt.grid(True)
-plt.show()
-
 solver_T_1D(geom, params)
+
+plt.show()
