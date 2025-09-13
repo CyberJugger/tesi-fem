@@ -10,3 +10,4 @@ def plotter(xx, f, titolo_grafico, marker=False):
     plt.xlabel("x"); plt.ylabel("T(x)")
     plt.title("{}".format(titolo_grafico))
     plt.grid(True)
+

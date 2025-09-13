@@ -12,7 +12,7 @@ f= lambda x: 0.03*(x-6)**4 #funzione sorgente
 #kop=[10**6, 0] #parametri robin
 #gop = [-1, 0]
 Tp_b = 1
-params=[k,a,f,None,None, Tp_b*k(8)]
+params=[k,a,f,None,None, a(8)*Tp_b*k(8)]
 
 #la funzione usa le c.c di dirichlet e neumann in modo tale
 #da avere un confronto anche su come ho impostato il problema
