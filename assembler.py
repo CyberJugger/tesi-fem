@@ -15,6 +15,7 @@ def mass_assembler_1D(x):
     
     return M
 
+#i due assembler sono specifici ad un caso in cui io abbia due condizioni di robin
 def load_assembler_1D(x, f, kop, gop):
     n = len(x) - 1
     b = np.zeros(n+1)
@@ -24,8 +25,11 @@ def load_assembler_1D(x, f, kop, gop):
         b[i]     += f(x[i])   * h / 2
         b[i+1]   += f(x[i+1]) * h / 2
     
-    b[0] = b[0] + kop[0]*gop[0]
-    b[n] = b[n] + kop[1]*gop[1]
+
+    #checks for robin condition
+    if kop and gop:
+        b[0] = b[0] + kop[0]*gop[0]
+        b[n] = b[n] + kop[1]*gop[1]
 
     return b
 
@@ -51,7 +55,9 @@ def stiffness_assembler_1D(x, k, a, kop):
         A[i+1,i] = A[i+1,i] - (am*km)/h
         A[i+1,i+1] = A[i+1,i+1] + (am*km)/h
     
-    A[0,0] += kop[0]
-    A[n,n] += kop[1]#n e non n+1 poiché 0-99, 99 è il 100esimo elemento
+    #with this condition i check if we have robin condition
+    if kop:
+        A[0,0] += kop[0]
+        A[n,n] += kop[1]#n e non n+1 poiché 0-99, 99 è il 100esimo elemento
 
     return A

@@ -3,19 +3,38 @@ import utils as ut
 import numpy as np
 from scipy.integrate import solve_bvp
 
+def apply_dirichlet(A, b, node, value):
+    # azzero riga
+    A[node, :] = 0
+    # imposto 1 sulla diagonale
+    A[node, node] = 1.0
+    # imposto il valore nel vettore dei carichi
+    b[node] = value
+    return A, b
+
+def apply_neumann(b,start:bool,value):
+    if start:
+        b[0] -= value
+    else:
+        b[-1] += value
+    return b
 
 def solver_T_1D(geom, params):
-    #params=[k,a,f,kop,gop]
+    #params=[k,a,f,kop,gop,q]
     """
     k: funzione conduttività
     a: funzione area
     f: funzione sorgente
     kop, gop: valori delle condizioni di robin
+    q: calore ricavato da neumann
     """
     x = geom.xx  # mesh
 
     A = am.stiffness_assembler_1D(x, params[0], params[1],params[3])          # assemble stiffness
     b = am.load_assembler_1D(x, params[2], params[3], params[4])    # assemble load
+    
+    A, b = apply_dirichlet(A, b, node=0, value=-1.0)
+    b = apply_neumann(b, False, params[5])
 
     Pf = np.linalg.solve(A, b)      # solve linear system
 
