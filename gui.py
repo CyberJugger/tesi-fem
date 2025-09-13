@@ -3,7 +3,7 @@
 import solver as sv
 import geometry as g
 import matplotlib.pyplot as plt
-
+import utils as ut
 
 geom = g.Geometry1D(2,8,100)
 k= lambda x: 5-0.6*x #conduttività
@@ -20,6 +20,6 @@ sol = sv.make_bvp_solver(geom,a, k, f, a=0, b=6, T_a=-1, Tp_b=1)
 
 # Plot
 xx=geom.xx
-sv.solver_T_1D(geom, params)
-
+xx, u_fem = sv.solver_T_1D(geom, params)
+error = ut.plot_error(xx, u_fem, sol, title="Errore tra FEM e analitico")
 plt.show()
