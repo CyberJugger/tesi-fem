@@ -12,14 +12,40 @@ def apply_dirichlet(A, b, node, value):
     b[node] = value
     return A, b
 
-def apply_neumann(b,start:bool,value):
+def apply_neumann(b,start:bool,value, a_fun, k_fun, x_node):
+    
+    q = a_fun(x_node)*k_fun(x_node) * value
+    
     if start:
         b[0] -= value
     else:
         b[-1] += value
     return b
 
-def solver_T_1D(geom, params):
+def apply_boundary_conditions(A, b, bc):
+    """
+    Applica automaticamente le condizioni al contorno a seconda del tipo.
+    bc è un dict del tipo:
+    bc = {"left": ("dirichlet", value), "right": ("neumann", value)}
+    """
+    n = len(b) - 1
+    
+    # Estremo sinistro
+    if bc["left"][0].lower() == "dirichlet":
+        A, b = apply_dirichlet(A, b, node=0, value=bc["left"][1])
+    elif bc["left"][0].lower() == "neumann":
+        b = apply_neumann(b, True, bc["left"][1])
+    
+    # Estremo destro
+    if bc["right"][0].lower() == "dirichlet":
+        A, b = apply_dirichlet(A, b, node=n, value=bc["right"][1])
+    elif bc["right"][0].lower() == "neumann":
+        b = apply_neumann(b, False, bc["right"][1])
+    
+    return A, b
+
+
+def solver_T_1D(geom, params,bc):
     #params=[k,a,f,kop,gop,q]
     """
     k: funzione conduttività
@@ -30,11 +56,14 @@ def solver_T_1D(geom, params):
     """
     x = geom.xx  # mesh
 
-    A = am.stiffness_assembler_1D(x, params[0], params[1],params[3])          # assemble stiffness
+    A = am.stiffness_assembler_1D(x, params[0], params[1],params[3]) # assemble stiffness
     b = am.load_assembler_1D(x, params[2], params[3], params[4])    # assemble load
     
-    A, b = apply_dirichlet(A, b, node=0, value=-1.0)
-    b = apply_neumann(b, False, params[5])
+    #A, b = apply_dirichlet(A, b, node=0, value=-1.0)
+    #b = apply_neumann(b, False, params[5])
+    #messo qui come test
+
+    A, b = apply_boundary_conditions(A, b, bc)
 
     Pf = np.linalg.solve(A, b)      # solve linear system
 
