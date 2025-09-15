@@ -61,16 +61,34 @@ def run_solver():
     geom = g.Geometry1D(x_start, x_end, n)
     
     # FEM
-    bc = {"left": (left_type, left_val), "right": (right_type, right_val)}
-    params = [k, a, f, None, None, 0]
+    bc = {"left": [left_type, left_val], "right": [right_type, right_val]}
     print(bc)
-    print(params)  
-    xx, u_fem = sv.solver_T_1D(geom, params, bc=bc)
+    if bc["left"][0] == "dirichlet":
+        left_bc = ("dirichlet", bc["left"][1], None)
+    elif bc["left"][0] == "neumann":
+        left_bc = ("neumann", bc["left"][1], None)
+
+    if bc["right"][0] == "dirichlet":
+        right_bc = ("dirichlet", bc["right"][1], None)
+    elif bc["right"][0] == "neumann":
+        right_bc = ("neumann", bc["right"][1], None)
 
     # Analitico
-    T_a = left_val if left_type == "dirichlet" else None
-    Tp_b = right_val if right_type == "neumann" else None
-    sol = sv.make_bvp_solver(geom, a, k, f, a=x_start, b=x_end, T_a=T_a, Tp_b=Tp_b)
+    sol = sv.make_bvp_solver(
+        geom, a, k, f, a=x_start, b=x_end,
+        left_bc=left_bc, right_bc=right_bc
+    )    
+
+    #checks in order to pass q instead of T'
+    if bc["left"][0] == "neumann":
+        bc["left"][1] = k(x_start)*a(x_start)*bc["left"][1]
+    if bc["right"][0] == "neumann":
+        print(bc["right"][1])
+        bc["right"][1] = k(x_end)*a(x_end)*bc["right"][1]
+    
+    params = [k, a, f, None, None, 0]  
+    xx, u_fem = sv.solver_T_1D(geom, params, bc=bc)
+    
 
     # Plot soluzioni
     plt.figure()
@@ -79,12 +97,12 @@ def run_solver():
     plt.legend()
     plt.grid(True)
     plt.title("Soluzione FEM vs Analitico")
-    plt.show()
-
-    # Plot errori
+    
     ut.plot_error(xx, u_fem, sol)
 
+    plt.show()
 
+    
 # GUI
 root = tk.Tk()
 root.title("FEM vs Analitico")

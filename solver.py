@@ -12,10 +12,7 @@ def apply_dirichlet(A, b, node, value):
     b[node] = value
     return A, b
 
-def apply_neumann(b,start:bool,value, a_fun, k_fun, x_node):
-    
-    q = a_fun(x_node)*k_fun(x_node) * value
-    
+def apply_neumann(b,start:bool,value):    
     if start:
         b[0] -= value
     else:
@@ -70,32 +67,52 @@ def solver_T_1D(geom, params,bc):
     ut.plotter(x,Pf,"T function FEM", True)
     return x, Pf
 
-def make_bvp_solver(geom, A_fun, k_fun, f_fun, a, b, T_a=None, Tp_b=None):
-    def K(x): return A_fun(x)*k_fun(x)
-    
+def make_bvp_solver(geom, A_fun, k_fun, f_fun, a, b,
+                    left_bc=("dirichlet", None, None),
+                    right_bc=("dirichlet", None, None)):
+
+    def K(x): return A_fun(x) * k_fun(x)
+
     # Derivata numerica di K
     def Kprime(x, h=1e-6):
-        return (K(x+h)-K(x-h))/(2*h)
-    
+        return (K(x+h) - K(x-h)) / (2*h)
+
+    # Equazioni del sistema
     def ode_fun(x, y):
         dy0 = y[1]
-        dy1 = -(Kprime(x)/K(x))*y[1] - f_fun(x)/K(x)
+        dy1 = -(Kprime(x)/K(x)) * y[1] - f_fun(x)/K(x)
         return np.vstack((dy0, dy1))
-    
+
+    # Condizioni al contorno
     def bc(ya, yb):
         conds = []
-        if T_a is not None:
-            conds.append(ya[0] - T_a)
-        if Tp_b is not None:
-            conds.append(yb[1] - Tp_b)
+
+        # --- sinistra ---
+        if left_bc[0] == "dirichlet":
+            conds.append(ya[0] - left_bc[1])
+        elif left_bc[0] == "neumann":
+            q = k_fun(a) * A_fun(a) * left_bc[1]
+            conds.append(k_fun(a)*A_fun(a)*ya[1] - q)
+        elif left_bc[0] == "robin":
+            alpha, g = left_bc[1], left_bc[2]
+            conds.append(alpha*ya[0] + k_fun(a)*A_fun(a)*ya[1] - g)
+
+        # --- destra ---
+        if right_bc[0] == "dirichlet":
+            conds.append(yb[0] - right_bc[1])
+        elif right_bc[0] == "neumann":
+            q = k_fun(b) * A_fun(b) * right_bc[1]
+            conds.append(k_fun(b)*A_fun(b)*yb[1] - q)
+        elif right_bc[0] == "robin":
+            alpha, g = right_bc[1], right_bc[2]
+            conds.append(alpha*yb[0] + k_fun(b)*A_fun(b)*yb[1] - g)
+
         return np.array(conds)
-    
+
+    # Mesh e guess iniziale
     x_mesh = geom.xx
     y_guess = np.zeros((2, x_mesh.size))
-    
+
     sol = solve_bvp(ode_fun, bc, x_mesh, y_guess)
-    ut.plotter(x_mesh,sol.sol(x_mesh)[0],"T function analytic")
+    ut.plotter(x_mesh, sol.sol(x_mesh)[0], "T function analytic")
     return sol
-
-
-
