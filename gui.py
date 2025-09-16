@@ -32,7 +32,10 @@ def run_solver():
 
     # Mesh
     geom = g.Geometry1D(x_start, x_end, n)
-    
+
+    if not ut.check_K_positive(geom.xx, k, a):
+        return
+
     # FEM
     bc = {"left": [left_type, left_val], "right": [right_type, right_val]}
     if bc["left"][0] == "dirichlet":
@@ -61,15 +64,6 @@ def run_solver():
  
     params = [k, a, f, None, None, 0]  
     xx, u_fem = sv.solver_T_1D(geom, params, bc=bc)
-    
-
-    #non uso ut perché è un double plotter
-    plt.figure()
-    plt.plot(xx, u_fem, "o-", label="FEM")
-    plt.plot(xx, sol.sol(xx)[0], "-", label="Analitico")
-    plt.legend()
-    plt.grid(True)
-    plt.title("Soluzione FEM vs Analitico")
     
     ut.plot_error(xx, u_fem, sol)
 
