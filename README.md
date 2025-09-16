@@ -11,6 +11,8 @@ Clone the repository, create a virtual enviroment
   python3 -m venv v_env
   source v_env/bin/activate
   pip install -r requirements.txt
+  linux: sudo apt-get install python3-tk 
+  macos: brew install python-tk
 ```
 
 
@@ -20,6 +22,20 @@ Clone the repository, create a virtual enviroment
    python3 gui.py
 ```
 
-This is a very basic version of the program, to change the problems' parameters modify the variables inside *main.py*.
-When ran, the first graph shows the function **T(x)** obtained by solving the ODE with a native scipy function.
-The second graph pops up once the first one is closed and it shows **T(x)** obtained by FEM method.
+The interface shows various fields, including three section:
+
+**Dominio**
+- x_start: start of the domain
+- x_end: end of the domain
+- n: number of elements for the method
+**Condizioni al contorno**
+
+it has two fields that let the user choose between dirichlet or neumann boundary conditions and set the values
+
+**Funzioni**
+- k(x): conductivity
+- a(x): for area
+- f(x): function of heat source
+
+
+On the top there are the fields for
