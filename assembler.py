@@ -12,7 +12,7 @@ def mass_assembler_1D(x):
         M[i, i+1]   += h / 6
         M[i+1, i]   += h / 6
         M[i+1, i+1] += h / 3
-    
+
     return M
 
 #i due assembler sono specifici ad un caso in cui io abbia due condizioni di robin

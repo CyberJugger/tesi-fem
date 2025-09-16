@@ -1,30 +1,3 @@
-#questo file a tempo debito ospiterà il codice dell'interfaccia grafica
-
-
-"""
-geom = g.Geometry1D(2,8,100)
-k= lambda x: 5-0.6*x #conduttività
-a=lambda _: 0.1 #funzione area
-f= lambda x: 0.03*(x-6)**4 #funzione sorgente
-#kop=[10**6, 0] #parametri robin
-#gop = [-1, 0]
-Tp_b = 1
-params=[k,a,f,None,None, a(8)*Tp_b*k(8)]
-bc = {
-    "left": ("dirichlet", -1.0),
-    "right": ("neumann", params[5])
-}
-#la funzione usa le c.c di dirichlet e neumann in modo tale
-#da avere un confronto anche su come ho impostato il problema
-sol = sv.make_bvp_solver(geom,a, k, f, a=0, b=6, T_a=-1, Tp_b=1)
-
-# Plot
-xx=geom.xx
-xx, u_fem = sv.solver_T_1D(geom, params)
-error = ut.plot_error(xx, u_fem, sol, title="Errore tra FEM e analitico")
-plt.show()
-"""
-
 import tkinter as tk
 from tkinter import ttk
 import matplotlib.pyplot as plt
@@ -62,7 +35,6 @@ def run_solver():
     
     # FEM
     bc = {"left": [left_type, left_val], "right": [right_type, right_val]}
-    print(bc)
     if bc["left"][0] == "dirichlet":
         left_bc = ("dirichlet", bc["left"][1], None)
     elif bc["left"][0] == "neumann":
@@ -85,12 +57,13 @@ def run_solver():
     if bc["right"][0] == "neumann":
         print(bc["right"][1])
         bc["right"][1] = k(x_end)*a(x_end)*bc["right"][1]
-    
+    # dopo avere costruito k,a,f e geom
+ 
     params = [k, a, f, None, None, 0]  
     xx, u_fem = sv.solver_T_1D(geom, params, bc=bc)
     
 
-    # Plot soluzioni
+    #non uso ut perché è un double plotter
     plt.figure()
     plt.plot(xx, u_fem, "o-", label="FEM")
     plt.plot(xx, sol.sol(xx)[0], "-", label="Analitico")
@@ -105,7 +78,7 @@ def run_solver():
     
 # GUI
 root = tk.Tk()
-root.title("FEM vs Analitico")
+root.title("FEM")
 
 # Parametri dominio
 frame_domain = ttk.LabelFrame(root, text="Dominio")

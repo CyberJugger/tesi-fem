@@ -58,8 +58,7 @@ def solver_T_1D(geom, params,bc):
     
     #A, b = apply_dirichlet(A, b, node=0, value=-1.0)
     #b = apply_neumann(b, False, params[5])
-    #messo qui come test
-
+    
     A, b = apply_boundary_conditions(A, b, bc)
 
     Pf = np.linalg.solve(A, b)      # solve linear system
@@ -93,9 +92,6 @@ def make_bvp_solver(geom, A_fun, k_fun, f_fun, a, b,
         elif left_bc[0] == "neumann":
             q = k_fun(a) * A_fun(a) * left_bc[1]
             conds.append(k_fun(a)*A_fun(a)*ya[1] - q)
-        elif left_bc[0] == "robin":
-            alpha, g = left_bc[1], left_bc[2]
-            conds.append(alpha*ya[0] + k_fun(a)*A_fun(a)*ya[1] - g)
 
         # --- destra ---
         if right_bc[0] == "dirichlet":
@@ -103,9 +99,6 @@ def make_bvp_solver(geom, A_fun, k_fun, f_fun, a, b,
         elif right_bc[0] == "neumann":
             q = k_fun(b) * A_fun(b) * right_bc[1]
             conds.append(k_fun(b)*A_fun(b)*yb[1] - q)
-        elif right_bc[0] == "robin":
-            alpha, g = right_bc[1], right_bc[2]
-            conds.append(alpha*yb[0] + k_fun(b)*A_fun(b)*yb[1] - g)
 
         return np.array(conds)
 
