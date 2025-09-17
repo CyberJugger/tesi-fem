@@ -5,19 +5,27 @@ import solver as sv
 import geometry as g
 import utils as ut
 import numpy as np
+#bollino salvatempo se le cose vanno male
+
 
 def run_solver():
-    # Recupero input GUI
-    x_start = float(entry_x_start.get())
-    x_end = float(entry_x_end.get())
-    n = int(entry_n.get())
+    # Recupero input GUI dominio
+    try:
+        x_start = ut.parse_value(entry_x_start)
+        x_end = ut.parse_value(entry_x_end)
+        n = int(eval(entry_n.get(), {"np": np}))
+    except Exception as e:
+        print("Errore nei parametri del dominio:", e)
+        return
 
-    left_type = combo_left.get().lower()
-    left_val = float(entry_left_val.get())
-    right_type = combo_right.get().lower()
-    right_val = float(entry_right_val.get())
+    # Boundary conditions
+    left_bc = ut.parse_bc("sinistra", combo_left, entry_left_val, entry_left_kop, entry_left_gop)
+    right_bc = ut.parse_bc("destra", combo_right, entry_right_val, entry_right_kop, entry_right_gop)
 
-    # Funzioni k(x), a(x), f(x) prese come stringhe
+    if left_bc is None or right_bc is None:
+        return
+
+    # Funzioni k(x), a(x), f(x)
     k_expr = entry_k.get()
     a_expr = entry_a.get()
     f_expr = entry_f.get()
@@ -36,37 +44,26 @@ def run_solver():
     if not ut.check_K_positive(geom.xx, k, a):
         return
 
-    # FEM
-    bc = {"left": [left_type, left_val], "right": [right_type, right_val]}
-    if bc["left"][0] == "dirichlet":
-        left_bc = ("dirichlet", bc["left"][1], None)
-    elif bc["left"][0] == "neumann":
-        left_bc = ("neumann", bc["left"][1], None)
+    # FEM: costruisco dizionario bc per solver_T_1D
+    bc = {"left": left_bc, "right": right_bc}
 
-    if bc["right"][0] == "dirichlet":
-        right_bc = ("dirichlet", bc["right"][1], None)
-    elif bc["right"][0] == "neumann":
-        right_bc = ("neumann", bc["right"][1], None)
+    # Conversione Neumann: passo flusso q invece che T'
+    if bc["left"][0] == "neumann":
+        bc["left"] = ("neumann", k(x_start) * a(x_start) * bc["left"][1], None)
+    if bc["right"][0] == "neumann":
+        bc["right"] = ("neumann", k(x_end) * a(x_end) * bc["right"][1], None)
 
     # Analitico
     sol = sv.make_bvp_solver(
         geom, a, k, f, a=x_start, b=x_end,
         left_bc=left_bc, right_bc=right_bc
-    )    
+    )
 
-    #checks in order to pass q instead of T'
-    if bc["left"][0] == "neumann":
-        bc["left"][1] = k(x_start)*a(x_start)*bc["left"][1]
-    if bc["right"][0] == "neumann":
-        print(bc["right"][1])
-        bc["right"][1] = k(x_end)*a(x_end)*bc["right"][1]
-    # dopo avere costruito k,a,f e geom
- 
-    params = [k, a, f, None, None, 0]  
+    # FEM
+    params = [k, a, f]  
     xx, u_fem = sv.solver_T_1D(geom, params, bc=bc)
     
     ut.plot_error(xx, u_fem, sol)
-
     plt.show()
 
     
@@ -93,27 +90,81 @@ entry_n = ttk.Entry(frame_domain)
 entry_n.insert(0, "100")
 entry_n.grid(row=2, column=1)
 
-# Condizioni al contorno
+# --- Condizioni al contorno ---
 frame_bc = ttk.LabelFrame(root, text="Condizioni al contorno")
 frame_bc.pack(padx=10, pady=10, fill="x")
 
-# Sinistra
+# ------------------ SINISTRA ------------------
 ttk.Label(frame_bc, text="Sinistra:").grid(row=0, column=0)
-combo_left = ttk.Combobox(frame_bc, values=["Dirichlet", "Neumann"])
+combo_left = ttk.Combobox(frame_bc, values=["Dirichlet", "Neumann", "Robin"])
 combo_left.current(0)
 combo_left.grid(row=0, column=1)
+
+# Entry valore
 entry_left_val = ttk.Entry(frame_bc)
 entry_left_val.insert(0, "-1.0")
 entry_left_val.grid(row=0, column=2)
 
-# Destra
+# Campi Robin (kop, gop)
+label_left_kop = ttk.Label(frame_bc, text="kop:")
+entry_left_kop = ttk.Entry(frame_bc)
+
+label_left_gop = ttk.Label(frame_bc, text="gop:")
+entry_left_gop = ttk.Entry(frame_bc)
+
+def update_left_fields(event):
+    if combo_left.get().lower() == "robin":
+        entry_left_val.grid_forget()
+        # Mostro i campi Robin affiancati
+        label_left_kop.grid(row=0, column=2, padx=(5,1))
+        entry_left_kop.grid(row=0, column=3, padx=(0,10))
+        label_left_gop.grid(row=0, column=4, padx=(5,1))
+        entry_left_gop.grid(row=0, column=5)
+    else:
+        label_left_kop.grid_forget()
+        entry_left_kop.grid_forget()
+        label_left_gop.grid_forget()
+        entry_left_gop.grid_forget()
+        entry_left_val.grid(row=0, column=2)
+
+combo_left.bind("<<ComboboxSelected>>", update_left_fields)
+
+
+# ------------------ DESTRA ------------------
 ttk.Label(frame_bc, text="Destra:").grid(row=1, column=0)
-combo_right = ttk.Combobox(frame_bc, values=["Dirichlet", "Neumann"])
+combo_right = ttk.Combobox(frame_bc, values=["Dirichlet", "Neumann", "Robin"])
 combo_right.current(1)
 combo_right.grid(row=1, column=1)
+
+# Entry valore
 entry_right_val = ttk.Entry(frame_bc)
 entry_right_val.insert(0, "1.0")
 entry_right_val.grid(row=1, column=2)
+
+# Campi Robin (kop, gop)
+label_right_kop = ttk.Label(frame_bc, text="kop:")
+entry_right_kop = ttk.Entry(frame_bc)
+
+label_right_gop = ttk.Label(frame_bc, text="gop:")
+entry_right_gop = ttk.Entry(frame_bc)
+
+def update_right_fields(event):
+    if combo_right.get().lower() == "robin":
+        entry_right_val.grid_forget()
+        # Mostro i campi Robin affiancati
+        label_right_kop.grid(row=1, column=2, padx=(5,1))
+        entry_right_kop.grid(row=1, column=3, padx=(0,10))
+        label_right_gop.grid(row=1, column=4, padx=(5,1))
+        entry_right_gop.grid(row=1, column=5)
+    else:
+        label_right_kop.grid_forget()
+        entry_right_kop.grid_forget()
+        label_right_gop.grid_forget()
+        entry_right_gop.grid_forget()
+        entry_right_val.grid(row=1, column=2)
+
+combo_right.bind("<<ComboboxSelected>>", update_right_fields)
+
 
 # Funzioni
 frame_fun = ttk.LabelFrame(root, text="Funzioni")
@@ -136,6 +187,10 @@ entry_f.grid(row=2, column=1)
 
 # Bottone run
 btn = ttk.Button(root, text="Esegui", command=run_solver)
-btn.pack(pady=10)
+btn.pack(pady=3)
+
+# Bottone chiudi grafici
+btn_close = ttk.Button(root, text="Chiudi grafici", command=lambda: plt.close('all'))
+btn_close.pack(pady=3)
 
 root.mainloop()
