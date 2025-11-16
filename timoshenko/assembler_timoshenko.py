@@ -105,6 +105,7 @@ def assemble_timoshenko_global(coords, connectivity, E, I, G, A, kappa, q=0, m=0
     Ndof = 2 * Nnodes             # w, phi per nodo
     Ne = len(connectivity)
 
+
     K = np.zeros((Ndof, Ndof))
     F = np.zeros(Ndof)
 
@@ -127,7 +128,6 @@ def assemble_timoshenko_global(coords, connectivity, E, I, G, A, kappa, q=0, m=0
         # nodi dell’elemento
         nodes = connectivity[e]
         xe = coords[nodes]
-
         xm = np.mean(xe)
 
         Ee = E_fun(xm)
@@ -136,7 +136,7 @@ def assemble_timoshenko_global(coords, connectivity, E, I, G, A, kappa, q=0, m=0
         Ae = A_fun(xm)
         qe = q_fun(xm)
         me = m_fun(xm)
-        # calcolo Ke, Fe con il TUO element solver
+
         Ke, Fe = timoshenko_element_quad(
             coords = xe,
             E = Ee,
