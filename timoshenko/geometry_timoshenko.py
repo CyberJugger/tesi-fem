@@ -6,11 +6,7 @@ class Geometry1DTimoshenko:
         self.a = a
         self.b = b
         self.Ne = Ne
-
-
         self.xx = np.linspace(a, b, 2*Ne + 1)
-
-
         self.conn = np.zeros((Ne, 3), dtype=int)
 
         # Ogni elemento usa nodi = [2*i, 2*i+1, 2*i+2]

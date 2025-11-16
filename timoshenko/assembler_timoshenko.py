@@ -69,23 +69,27 @@ def timoshenko_element_quad(coords, E, I, G, A, kappa, q=0.0, m=0.0):
         # aggiungi alla rigidezza
         Ke += (B.T @ C @ B) * J * wgt
 
-        # ---------------------------------------------------------
-        # CARICO DISTRIBUITO q
-        # ---------------------------------------------------------
-        # vettore N completo (6 componenti)
+        #carichi distribuiti
         N_full = np.zeros(6)
         for i in range(3):
             N_full[2*i] = N[i]  # solo sui w
 
         Fe += N_full * q * J * wgt
 
+        M_full = np.zeros(6)
+        for i in range(3):
+            M_full[2*i + 1] = N[i]  # contributi su phi
+
+        Fe += M_full * m * J * wgt
+
+        
     return Ke, Fe
 
 
 # ------------------------------------------------------------------------------
 # ASSEMBLER GLOBALE PER ELEMENTI TIMOSHENKO 3-NODI QUADRATICI
 # ------------------------------------------------------------------------------
-def assemble_timoshenko_global(coords, connectivity, E, I, G, A, kappa, q=0):
+def assemble_timoshenko_global(coords, connectivity, E, I, G, A, kappa, q=0, m=0):
     """
     coords        : array nodi globali (dimensione Nnodes)
     connectivity  : array (Ne x 3) con gli indici dei nodi dell’elemento
@@ -114,7 +118,7 @@ def assemble_timoshenko_global(coords, connectivity, E, I, G, A, kappa, q=0):
     G_fun = ensure_fun(G)
     A_fun = ensure_fun(A)
     q_fun = ensure_fun(q)
-
+    m_fun = ensure_fun(m)
     # --------------------------------------
     # LOOP SUGLI ELEMENTI
     # --------------------------------------
@@ -131,7 +135,7 @@ def assemble_timoshenko_global(coords, connectivity, E, I, G, A, kappa, q=0):
         Ge = G_fun(xm)
         Ae = A_fun(xm)
         qe = q_fun(xm)
-
+        me = m_fun(xm)
         # calcolo Ke, Fe con il TUO element solver
         Ke, Fe = timoshenko_element_quad(
             coords = xe,
@@ -140,7 +144,8 @@ def assemble_timoshenko_global(coords, connectivity, E, I, G, A, kappa, q=0):
             G = Ge,
             A = Ae,
             kappa = kappa,
-            q = qe
+            q = qe,
+            m = me
         )
 
         # -----------------------------

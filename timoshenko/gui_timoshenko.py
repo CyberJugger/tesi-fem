@@ -20,6 +20,7 @@ def run_solver():
     A_expr = entry_A.get()
     kappa_expr = entry_kappa.get()
     q_expr = entry_q.get()
+    m_expr = entry_m.get()
 
     try:
         E_fun = lambda x: eval(E_expr, {'x': x, 'np': np})
@@ -28,6 +29,7 @@ def run_solver():
         A_fun = lambda x: eval(A_expr, {'x': x, 'np': np})
         kappa = float(eval(kappa_expr, {'np': np}))
         q_fun = lambda x: eval(q_expr, {'x': x, 'np': np})
+        m_fun = lambda x: eval(m_expr, {'x': x, 'np': np})
     except Exception as e:
         print('Errore nelle funzioni di input:', e)
         return
@@ -39,10 +41,9 @@ def run_solver():
     right_bc = ('dirichlet', {'w': float(entry_right_w.get()) if entry_right_w.get() != '' else None,
                                'phi': float(entry_right_phi.get()) if entry_right_phi.get() != '' else None})
 
-    params = [E_fun, I_fun, G_fun, A_fun, kappa, q_fun]
+    params = [E_fun, I_fun, G_fun, A_fun, kappa, q_fun, m_fun]
 
     x, w, phi = sv_t.solver_timoshenko_1D(geom, params, {'left': left_bc, 'right': right_bc})
-    print(x,w,phi)
     plt.show()
     
 root = tk.Tk()
@@ -83,6 +84,9 @@ frame_load.pack(padx=6, pady=6, fill='x')
 
 ttk.Label(frame_load, text='q(x)').grid(row=0, column=0)
 entry_q = ttk.Entry(frame_load, width=40); entry_q.insert(0, '0.0'); entry_q.grid(row=0, column=1)
+
+ttk.Label(frame_load, text='m(x)').grid(row=1, column=0)
+entry_m = ttk.Entry(frame_load, width=40); entry_m.insert(0, '0.0'); entry_m.grid(row=1, column=1)
 
 frame_bc = ttk.LabelFrame(root, text='Condizioni al contorno (vuoto = None)')
 frame_bc.pack(padx=6, pady=6, fill='x')

@@ -20,7 +20,7 @@ def solver_timoshenko_1D(geom, params, bc):
     x = geom.xx
     conn = geom.conn
 
-    E_fun, I_fun, G_fun, A_fun, kappa, q_fun = params
+    E_fun, I_fun, G_fun, A_fun, kappa, q_fun, m_fun = params
 
     # -------------------------
     # ASSEMBLAGGIO GLOBALE
@@ -33,7 +33,8 @@ def solver_timoshenko_1D(geom, params, bc):
         G = G_fun,
         A = A_fun,
         kappa = kappa,
-        q = q_fun
+        q = q_fun,
+        m = m_fun
     )
 
     # -------------------------
